@@ -1,8 +1,10 @@
 package com.example.xmlformatter.command;
 
+import com.example.xmlformatter.model.PathHolder;
+
 public interface Command {
 
-    void execute();
+    void execute(PathHolder pathHolder);
 
     String getName();
 

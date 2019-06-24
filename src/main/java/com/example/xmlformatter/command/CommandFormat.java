@@ -1,6 +1,6 @@
 package com.example.xmlformatter.command;
 
-import com.example.xmlformatter.service.ScannerService;
+import com.example.xmlformatter.model.PathHolder;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -11,23 +11,22 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Path;
 
 public class CommandFormat extends AbstractCommand implements Command {
 
     private static final String NAME = "format";
 
-    public CommandFormat(ScannerService scannerService, String argument) {
-        super(scannerService, argument);
+    public CommandFormat(String argument) {
+        super(argument);
     }
 
     @Override
-    public void execute() {
-        String currentPath = scannerService.getPath().toAbsolutePath().toString();
+    public void execute(PathHolder pathHolder) {
+        String currentPath = pathHolder.getPath().toAbsolutePath().toString();
         if (Strings.isBlank(argument)) {
             System.out.println("need name file");
         } else {
-            currentPath +=  '\\' + argument;
+            currentPath += '\\' + argument;
 
             XWPFDocument document = new XWPFDocument();
 
@@ -46,10 +45,10 @@ public class CommandFormat extends AbstractCommand implements Command {
             paragraph.setAlignment(ParagraphAlignment.RIGHT);
             XWPFRun run = paragraph.createRun();
             run.setText("At tutorialspoint.com, we strive hard to " +
-                "provide quality tutorials for self-learning " +
-                "purpose in the domains of Academics, Information " +
-                "Technology, Management and Computer Programming " +
-                "Languages.");
+                    "provide quality tutorials for self-learning " +
+                    "purpose in the domains of Academics, Information " +
+                    "Technology, Management and Computer Programming " +
+                    "Languages.");
 
             //Create Another paragraph
             paragraph = document.createParagraph();
@@ -58,11 +57,11 @@ public class CommandFormat extends AbstractCommand implements Command {
             paragraph.setAlignment(ParagraphAlignment.CENTER);
             run = paragraph.createRun();
             run.setText("The endeavour started by Mohtashim, an AMU " +
-                "alumni, who is the founder and the managing director " +
-                "of Tutorials Point (I) Pvt. Ltd. He came up with the " +
-                "website tutorialspoint.com in year 2006 with the help" +
-                "of handpicked freelancers, with an array of tutorials" +
-                " for computer programming languages. ");
+                    "alumni, who is the founder and the managing director " +
+                    "of Tutorials Point (I) Pvt. Ltd. He came up with the " +
+                    "website tutorialspoint.com in year 2006 with the help" +
+                    "of handpicked freelancers, with an array of tutorials" +
+                    " for computer programming languages. ");
 
             try {
                 document.write(out);

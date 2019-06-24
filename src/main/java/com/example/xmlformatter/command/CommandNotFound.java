@@ -1,15 +1,15 @@
 package com.example.xmlformatter.command;
 
-import com.example.xmlformatter.model.PathHolder;
+import com.example.xmlformatter.service.ScannerService;
 
 public class CommandNotFound extends AbstractCommand implements Command {
 
-    public CommandNotFound(String argument) {
-        super(null);
+    public CommandNotFound(ScannerService scannerService, String argument) {
+        super(scannerService, null);
     }
 
     @Override
-    public void execute(PathHolder pathHolder) {
+    public void execute() {
         System.out.println("Command not found");
     }
 

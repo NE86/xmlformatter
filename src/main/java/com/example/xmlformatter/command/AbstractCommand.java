@@ -1,9 +1,17 @@
 package com.example.xmlformatter.command;
 
-abstract class AbstractCommand {
-    protected String argument;
+import com.example.xmlformatter.service.ScannerService;
 
-    AbstractCommand(String argument) {
+abstract class AbstractCommand {
+    ScannerService scannerService;
+
+    String argument;
+
+    private AbstractCommand() {
+    }
+
+    AbstractCommand(ScannerService scannerService, String argument) {
+        this.scannerService = scannerService;
         this.argument = argument;
     }
 }

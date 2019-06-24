@@ -1,6 +1,6 @@
 package com.example.xmlformatter.command;
 
-import com.example.xmlformatter.model.PathHolder;
+import com.example.xmlformatter.service.ScannerService;
 import org.apache.logging.log4j.util.Strings;
 
 import java.nio.file.Files;
@@ -11,13 +11,13 @@ public class CommandCD extends AbstractCommand implements Command {
 
     private static final String NAME = "cd";
 
-    public CommandCD(String argument) {
-        super(argument);
+    public CommandCD(ScannerService scannerService, String argument) {
+        super(scannerService, argument);
     }
 
     @Override
-    public void execute(PathHolder pathHolder) {
-        String currentPath = pathHolder.getPath().toAbsolutePath().toString();
+    public void execute() {
+        String currentPath = scannerService.getPath().toAbsolutePath().toString();
         Path newPath;
         if (Strings.isBlank(argument)) {
             newPath = down(currentPath);
@@ -25,7 +25,7 @@ public class CommandCD extends AbstractCommand implements Command {
             newPath = up(currentPath);
         }
         if (Files.exists(newPath)) {
-            pathHolder.setPath(newPath);
+            scannerService.setPath(newPath);
             System.out.println(newPath.toAbsolutePath().toString());
         } else {
             System.out.println("Path not found!");

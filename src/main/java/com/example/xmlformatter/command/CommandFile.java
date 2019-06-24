@@ -1,6 +1,6 @@
 package com.example.xmlformatter.command;
 
-import com.example.xmlformatter.model.PathHolder;
+import com.example.xmlformatter.service.ScannerService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,13 +11,14 @@ public class CommandFile extends AbstractCommand implements Command {
 
     private static final String NAME = "file";
 
-    public CommandFile(String argument) {
-        super(argument);
+    public CommandFile(ScannerService scannerService, String argument) {
+        super(scannerService, argument);
     }
 
     @Override
-    public void execute(PathHolder pathHolder) {
-        try (Stream<Path> paths = Files.find(pathHolder.getPath(), 1, (p, attr) -> !attr.isDirectory())) {
+    public void execute() {
+        try (Stream<Path> paths = Files.find(scannerService.getPath(), 1,
+            (path, attributes) -> !attributes.isDirectory())) {
             paths.forEach(System.out::println);
         } catch (IOException e) {
             //path is valid

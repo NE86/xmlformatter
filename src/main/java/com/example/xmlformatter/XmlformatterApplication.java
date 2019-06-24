@@ -9,19 +9,20 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class XmlFormatterApplication implements CommandLineRunner {
+public class XmlformatterApplication implements CommandLineRunner {
 
-    private static Logger LOG = LoggerFactory.getLogger(XmlFormatterApplication.class);
+    private static Logger LOG = LoggerFactory.getLogger(XmlformatterApplication.class);
     private ScannerService scannerService;
 
     @Autowired
-    public XmlFormatterApplication(ScannerService scannerService) {
+    public XmlformatterApplication(ScannerService scannerService) {
         this.scannerService = scannerService;
     }
 
     public static void main(String[] args) {
         LOG.info("SATRTING THE APPLICATION");
-        SpringApplication.run(XmlFormatterApplication.class, args);
+        SpringApplication.run(XmlformatterApplication.class, args);
+        LOG.info("APPLICATION FINISHED");
     }
 
     @Override

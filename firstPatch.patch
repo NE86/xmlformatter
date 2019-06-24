@@ -1,0 +1,567 @@
+Index: src/main/java/com/example/xmlformatter/factory/command/CommandFactory.java
+===================================================================
+--- src/main/java/com/example/xmlformatter/factory/command/CommandFactory.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/factory/command/CommandFactory.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
+@@ -1,8 +0,0 @@
+-package com.example.xmlformatter.factory.command;
+-
+-import com.example.xmlformatter.command.Command;
+-import com.example.xmlformatter.service.ScannerService;
+-
+-public interface CommandFactory {
+-     Command getCommand(ScannerService scannerService, String argument);
+-}
+Index: src/main/java/com/example/xmlformatter/XmlformatterApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/XmlformatterApplication.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/XmlformatterApplication.java	(date 1561344529339)
+@@ -9,20 +9,19 @@
+ import org.springframework.boot.autoconfigure.SpringBootApplication;
+ 
+ @SpringBootApplication
+-public class XmlformatterApplication implements CommandLineRunner {
++public class XmlFormatterApplication implements CommandLineRunner {
+ 
+-    private static Logger LOG = LoggerFactory.getLogger(XmlformatterApplication.class);
++    private static Logger LOG = LoggerFactory.getLogger(XmlFormatterApplication.class);
+     private ScannerService scannerService;
+ 
+     @Autowired
+-    public XmlformatterApplication(ScannerService scannerService) {
++    public XmlFormatterApplication(ScannerService scannerService) {
+         this.scannerService = scannerService;
+     }
+ 
+     public static void main(String[] args) {
+         LOG.info("SATRTING THE APPLICATION");
+-        SpringApplication.run(XmlformatterApplication.class, args);
+-        LOG.info("APPLICATION FINISHED");
++        SpringApplication.run(XmlFormatterApplication.class, args);
+     }
+ 
+     @Override
+Index: src/main/java/com/example/xmlformatter/command/CommandHelp.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/command/CommandHelp.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/command/CommandHelp.java	(date 1561344340662)
+@@ -1,7 +1,7 @@
+ package com.example.xmlformatter.command;
+ 
+ import com.example.xmlformatter.factory.AbstractCommandFactory;
+-import com.example.xmlformatter.service.ScannerService;
++import com.example.xmlformatter.model.PathHolder;
+ 
+ import java.util.Arrays;
+ 
+@@ -9,14 +9,14 @@
+ 
+     private static final String NAME = "help";
+ 
+-    public CommandHelp(ScannerService scannerService, String argument) {
+-        super(scannerService, null);
++    public CommandHelp(String argument) {
++        super(null);
+     }
+ 
+     @Override
+-    public void execute() {
++    public void execute(PathHolder pathHolder) {
+         Arrays.asList(AbstractCommandFactory.CommandList.values()).forEach(x -> {
+-            Command command = x.getCommandFactory().getCommand(scannerService, null);
++            Command command = x.getCommandFactory().getCommand(null);
+             System.out.println(command.getName() + " - " + command.getTitle());
+         });
+     }
+Index: src/main/java/com/example/xmlformatter/command/CommandInfo.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/command/CommandInfo.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/command/CommandInfo.java	(date 1561344340896)
+@@ -1,6 +1,6 @@
+ package com.example.xmlformatter.command;
+ 
+-import com.example.xmlformatter.service.ScannerService;
++import com.example.xmlformatter.model.PathHolder;
+ 
+ import java.io.IOException;
+ import java.nio.file.Files;
+@@ -11,14 +11,13 @@
+ 
+     private static final String NAME = "info";
+ 
+-    public CommandInfo(ScannerService scannerService, String argument) {
+-        super(scannerService, argument);
++    public CommandInfo(String argument) {
++        super(argument);
+     }
+ 
+     @Override
+-    public void execute() {
+-        try (Stream<Path> paths = Files.find(scannerService.getPath(), 1,
+-            (path, attributes) -> attributes.isDirectory())) {
++    public void execute(PathHolder pathHolder) {
++        try (Stream<Path> paths = Files.find(pathHolder.getPath(), 1, (p, attr) -> attr.isDirectory())) {
+             paths.forEach(System.out::println);
+         } catch (IOException e) {
+             //path is valid
+Index: src/main/java/com/example/xmlformatter/command/CommandFormat.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/command/CommandFormat.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/command/CommandFormat.java	(date 1561345751223)
+@@ -1,6 +1,6 @@
+ package com.example.xmlformatter.command;
+ 
+-import com.example.xmlformatter.service.ScannerService;
++import com.example.xmlformatter.model.PathHolder;
+ import org.apache.logging.log4j.util.Strings;
+ import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
+ import org.apache.poi.xwpf.usermodel.XWPFDocument;
+@@ -11,23 +11,22 @@
+ import java.io.FileNotFoundException;
+ import java.io.FileOutputStream;
+ import java.io.IOException;
+-import java.nio.file.Path;
+ 
+ public class CommandFormat extends AbstractCommand implements Command {
+ 
+     private static final String NAME = "format";
+ 
+-    public CommandFormat(ScannerService scannerService, String argument) {
+-        super(scannerService, argument);
++    public CommandFormat(String argument) {
++        super(argument);
+     }
+ 
+     @Override
+-    public void execute() {
+-        String currentPath = scannerService.getPath().toAbsolutePath().toString();
++    public void execute(PathHolder pathHolder) {
++        String currentPath = pathHolder.getPath().toAbsolutePath().toString();
+         if (Strings.isBlank(argument)) {
+             System.out.println("need name file");
+         } else {
+-            currentPath +=  '\\' + argument;
++            currentPath += '\\' + argument;
+ 
+             XWPFDocument document = new XWPFDocument();
+ 
+@@ -46,10 +45,10 @@
+             paragraph.setAlignment(ParagraphAlignment.RIGHT);
+             XWPFRun run = paragraph.createRun();
+             run.setText("At tutorialspoint.com, we strive hard to " +
+-                "provide quality tutorials for self-learning " +
+-                "purpose in the domains of Academics, Information " +
+-                "Technology, Management and Computer Programming " +
+-                "Languages.");
++                    "provide quality tutorials for self-learning " +
++                    "purpose in the domains of Academics, Information " +
++                    "Technology, Management and Computer Programming " +
++                    "Languages.");
+ 
+             //Create Another paragraph
+             paragraph = document.createParagraph();
+@@ -58,11 +57,11 @@
+             paragraph.setAlignment(ParagraphAlignment.CENTER);
+             run = paragraph.createRun();
+             run.setText("The endeavour started by Mohtashim, an AMU " +
+-                "alumni, who is the founder and the managing director " +
+-                "of Tutorials Point (I) Pvt. Ltd. He came up with the " +
+-                "website tutorialspoint.com in year 2006 with the help" +
+-                "of handpicked freelancers, with an array of tutorials" +
+-                " for computer programming languages. ");
++                    "alumni, who is the founder and the managing director " +
++                    "of Tutorials Point (I) Pvt. Ltd. He came up with the " +
++                    "website tutorialspoint.com in year 2006 with the help" +
++                    "of handpicked freelancers, with an array of tutorials" +
++                    " for computer programming languages. ");
+ 
+             try {
+                 document.write(out);
+Index: src/main/java/com/example/xmlformatter/command/CommandNotFound.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/command/CommandNotFound.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/command/CommandNotFound.java	(date 1561345751255)
+@@ -1,15 +1,15 @@
+ package com.example.xmlformatter.command;
+ 
+-import com.example.xmlformatter.service.ScannerService;
++import com.example.xmlformatter.model.PathHolder;
+ 
+ public class CommandNotFound extends AbstractCommand implements Command {
+ 
+-    public CommandNotFound(ScannerService scannerService, String argument) {
+-        super(scannerService, null);
++    public CommandNotFound(String argument) {
++        super(null);
+     }
+ 
+     @Override
+-    public void execute() {
++    public void execute(PathHolder pathHolder) {
+         System.out.println("Command not found");
+     }
+ 
+Index: src/main/java/com/example/xmlformatter/command/CommandExit.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/command/CommandExit.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/command/CommandExit.java	(date 1561344340646)
+@@ -1,20 +1,19 @@
+ package com.example.xmlformatter.command;
+ 
+-import com.example.xmlformatter.service.ScannerService;
++import com.example.xmlformatter.model.PathHolder;
+ 
+ public class CommandExit extends AbstractCommand implements Command {
+ 
+     private static final String NAME = "exit";
+ 
+-    public CommandExit(ScannerService scannerService, String argument) {
+-        super(scannerService, null);
++    public CommandExit(String argument) {
++        super(null);
+     }
+ 
+     @Override
+-    public void execute() {
+-        doExit();
+-        scannerService.getScanner().close();
+-        scannerService.shutdown();
++    public void execute(PathHolder pathHolder) {
++        System.out.println("Exit!");
++        System.exit(0);
+     }
+ 
+     @Override
+@@ -26,8 +25,4 @@
+     public String getTitle() {
+         return "exit program";
+     }
+-
+-    private void doExit() {
+-        System.out.println("Exit!");
+-    }
+ }
+Index: src/main/java/com/example/xmlformatter/command/CommandCD.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/command/CommandCD.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/command/CommandCD.java	(date 1561344340662)
+@@ -1,6 +1,6 @@
+ package com.example.xmlformatter.command;
+ 
+-import com.example.xmlformatter.service.ScannerService;
++import com.example.xmlformatter.model.PathHolder;
+ import org.apache.logging.log4j.util.Strings;
+ 
+ import java.nio.file.Files;
+@@ -11,13 +11,13 @@
+ 
+     private static final String NAME = "cd";
+ 
+-    public CommandCD(ScannerService scannerService, String argument) {
+-        super(scannerService, argument);
++    public CommandCD(String argument) {
++        super(argument);
+     }
+ 
+     @Override
+-    public void execute() {
+-        String currentPath = scannerService.getPath().toAbsolutePath().toString();
++    public void execute(PathHolder pathHolder) {
++        String currentPath = pathHolder.getPath().toAbsolutePath().toString();
+         Path newPath;
+         if (Strings.isBlank(argument)) {
+             newPath = down(currentPath);
+@@ -25,7 +25,7 @@
+             newPath = up(currentPath);
+         }
+         if (Files.exists(newPath)) {
+-            scannerService.setPath(newPath);
++            pathHolder.setPath(newPath);
+             System.out.println(newPath.toAbsolutePath().toString());
+         } else {
+             System.out.println("Path not found!");
+Index: src/main/java/com/example/xmlformatter/config/AppConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/config/AppConfig.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/config/AppConfig.java	(date 1561345751239)
+@@ -1,9 +1,8 @@
+ package com.example.xmlformatter.config;
+ 
+-import com.example.xmlformatter.factory.AbstractCommandFactory;
+ import com.example.xmlformatter.factory.PathFactory;
+ import com.example.xmlformatter.factory.ScannerFactory;
+-import com.example.xmlformatter.service.ScannerService;
++import com.example.xmlformatter.model.PathHolder;
+ import org.springframework.context.annotation.Bean;
+ import org.springframework.context.annotation.ComponentScan;
+ import org.springframework.context.annotation.Configuration;
+@@ -25,4 +24,9 @@
+         return PathFactory.getInstance();
+     }
+ 
++    @Bean
++    public PathHolder getPathHolder(Path path) {
++        return new PathHolder(path);
++    }
++
+ }
+Index: src/main/java/com/example/xmlformatter/factory/CommandFactory.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/factory/CommandFactory.java	(date 1561345751255)
++++ src/main/java/com/example/xmlformatter/factory/CommandFactory.java	(date 1561345751255)
+@@ -0,0 +1,8 @@
++package com.example.xmlformatter.factory;
++
++import com.example.xmlformatter.command.Command;
++
++@FunctionalInterface
++public interface CommandFactory {
++    Command getCommand(String argument);
++}
+Index: src/main/java/com/example/xmlformatter/factory/AbstractCommandFactory.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/factory/AbstractCommandFactory.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/factory/AbstractCommandFactory.java	(date 1561344529355)
+@@ -8,20 +8,18 @@
+ import com.example.xmlformatter.command.CommandHelp;
+ import com.example.xmlformatter.command.CommandInfo;
+ import com.example.xmlformatter.command.CommandNotFound;
+-import com.example.xmlformatter.factory.command.CommandFactory;
+-import com.example.xmlformatter.service.ScannerService;
+ import com.example.xmlformatter.utils.CommandLinesUtils;
+ 
+ public class AbstractCommandFactory {
+ 
+-    public static Command getCommand(String commandLine, ScannerService scannerService) {
++    public static Command getCommand(String commandLine) {
+         CommandList commandList;
+         try {
+             commandList = CommandList.valueOf(CommandLinesUtils.commandWord(commandLine).toUpperCase());
+         } catch (final IllegalArgumentException e) {
+             commandList = CommandList.NOT_FOUND;
+         }
+-        return commandList.getCommandFactory().getCommand(scannerService, CommandLinesUtils.commandArgs(commandLine));
++        return commandList.getCommandFactory().getCommand(CommandLinesUtils.commandArgs(commandLine));
+     }
+ 
+     public enum CommandList {
+Index: src/main/java/com/example/xmlformatter/model/PathHolder.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/model/PathHolder.java	(date 1561344340880)
++++ src/main/java/com/example/xmlformatter/model/PathHolder.java	(date 1561344340880)
+@@ -0,0 +1,21 @@
++package com.example.xmlformatter.model;
++
++
++import java.nio.file.Path;
++
++public class PathHolder {
++
++    private Path path;
++
++    public PathHolder(Path path) {
++        this.path = path;
++    }
++
++    public Path getPath() {
++        return path;
++    }
++
++    public void setPath(Path path) {
++        this.path = path;
++    }
++}
+Index: src/main/java/com/example/xmlformatter/command/Command.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/command/Command.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/command/Command.java	(date 1561344340849)
+@@ -1,8 +1,10 @@
+ package com.example.xmlformatter.command;
+ 
++import com.example.xmlformatter.model.PathHolder;
++
+ public interface Command {
+ 
+-    void execute();
++    void execute(PathHolder pathHolder);
+ 
+     String getName();
+ 
+Index: src/main/java/com/example/xmlformatter/command/AbstractCommand.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/command/AbstractCommand.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/command/AbstractCommand.java	(date 1561344340709)
+@@ -1,17 +1,9 @@
+ package com.example.xmlformatter.command;
+ 
+-import com.example.xmlformatter.service.ScannerService;
+-
+ abstract class AbstractCommand {
+-    ScannerService scannerService;
+-
+-    String argument;
++    protected String argument;
+ 
+-    private AbstractCommand() {
+-    }
+-
+-    AbstractCommand(ScannerService scannerService, String argument) {
+-        this.scannerService = scannerService;
++    AbstractCommand(String argument) {
+         this.argument = argument;
+     }
+ }
+Index: src/main/java/com/example/xmlformatter/command/CommandFile.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/command/CommandFile.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/command/CommandFile.java	(date 1561344340693)
+@@ -1,6 +1,6 @@
+ package com.example.xmlformatter.command;
+ 
+-import com.example.xmlformatter.service.ScannerService;
++import com.example.xmlformatter.model.PathHolder;
+ 
+ import java.io.IOException;
+ import java.nio.file.Files;
+@@ -11,14 +11,13 @@
+ 
+     private static final String NAME = "file";
+ 
+-    public CommandFile(ScannerService scannerService, String argument) {
+-        super(scannerService, argument);
++    public CommandFile(String argument) {
++        super(argument);
+     }
+ 
+     @Override
+-    public void execute() {
+-        try (Stream<Path> paths = Files.find(scannerService.getPath(), 1,
+-            (path, attributes) -> !attributes.isDirectory())) {
++    public void execute(PathHolder pathHolder) {
++        try (Stream<Path> paths = Files.find(pathHolder.getPath(), 1, (p, attr) -> !attr.isDirectory())) {
+             paths.forEach(System.out::println);
+         } catch (IOException e) {
+             //path is valid
+Index: src/test/java/com/example/xmlformatter/XmlformatterApplicationTests.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/test/java/com/example/xmlformatter/XmlformatterApplicationTests.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/test/java/com/example/xmlformatter/XmlformatterApplicationTests.java	(date 1561344529339)
+@@ -7,7 +7,7 @@
+ 
+ @RunWith(SpringRunner.class)
+ @SpringBootTest
+-public class XmlformatterApplicationTests {
++public class XmlFormatterApplicationTests {
+ 
+     @Test
+     public void contextLoads() {
+Index: src/main/java/com/example/xmlformatter/service/ScannerService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/main/java/com/example/xmlformatter/service/ScannerService.java	(revision 0f0f87770353f64cd4d17765aa96a2c3f4377afe)
++++ src/main/java/com/example/xmlformatter/service/ScannerService.java	(date 1561344340834)
+@@ -1,10 +1,10 @@
+ package com.example.xmlformatter.service;
+ 
+ import com.example.xmlformatter.factory.AbstractCommandFactory;
++import com.example.xmlformatter.model.PathHolder;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Service;
+ 
+-import java.nio.file.Path;
+ import java.util.Scanner;
+ 
+ @Service
+@@ -12,41 +12,21 @@
+ 
+     private final Scanner scanner;
+ 
+-    private Path path;
+-
+-    private boolean stop = false;
++    private PathHolder pathHolder;
+ 
+     @Autowired
+-    public ScannerService(Scanner scanner, Path path) {
++    public ScannerService(Scanner scanner, PathHolder pathHolder) {
+         this.scanner = scanner;
+-        this.path = path;
++        this.pathHolder = pathHolder;
+     }
+ 
+     public void run() {
+         System.out.print("Enter something : ");
+         String input = scanner.nextLine();
+ 
+-        AbstractCommandFactory.getCommand(input, this).execute();
++        AbstractCommandFactory.getCommand(input).execute(pathHolder);
+ 
+         System.out.println("-----------\n");
+-        if (!stop) {
+-            run();
+-        }
++        run();
+     }
+-
+-    public void shutdown() {
+-        stop = true;
+-    }
+-
+-    public Scanner getScanner() {
+-        return scanner;
+-    }
+-
+-    public Path getPath() {
+-        return path;
+-    }
+-
+-    public void setPath(Path path) {
+-        this.path = path;
+-    }
+ }

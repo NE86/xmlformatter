@@ -1,20 +1,19 @@
 package com.example.xmlformatter.command;
 
-import com.example.xmlformatter.service.ScannerService;
+import com.example.xmlformatter.model.PathHolder;
 
 public class CommandExit extends AbstractCommand implements Command {
 
     private static final String NAME = "exit";
 
-    public CommandExit(ScannerService scannerService, String argument) {
-        super(scannerService, null);
+    public CommandExit(String argument) {
+        super(null);
     }
 
     @Override
-    public void execute() {
-        doExit();
-        scannerService.getScanner().close();
-        scannerService.shutdown();
+    public void execute(PathHolder pathHolder) {
+        System.out.println("Exit!");
+        System.exit(0);
     }
 
     @Override
@@ -25,9 +24,5 @@ public class CommandExit extends AbstractCommand implements Command {
     @Override
     public String getTitle() {
         return "exit program";
-    }
-
-    private void doExit() {
-        System.out.println("Exit!");
     }
 }

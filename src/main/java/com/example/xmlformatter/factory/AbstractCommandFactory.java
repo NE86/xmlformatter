@@ -8,20 +8,18 @@ import com.example.xmlformatter.command.CommandFormat;
 import com.example.xmlformatter.command.CommandHelp;
 import com.example.xmlformatter.command.CommandInfo;
 import com.example.xmlformatter.command.CommandNotFound;
-import com.example.xmlformatter.factory.command.CommandFactory;
-import com.example.xmlformatter.service.ScannerService;
 import com.example.xmlformatter.utils.CommandLinesUtils;
 
 public class AbstractCommandFactory {
 
-    public static Command getCommand(String commandLine, ScannerService scannerService) {
+    public static Command getCommand(String commandLine) {
         CommandList commandList;
         try {
             commandList = CommandList.valueOf(CommandLinesUtils.commandWord(commandLine).toUpperCase());
         } catch (final IllegalArgumentException e) {
             commandList = CommandList.NOT_FOUND;
         }
-        return commandList.getCommandFactory().getCommand(scannerService, CommandLinesUtils.commandArgs(commandLine));
+        return commandList.getCommandFactory().getCommand(CommandLinesUtils.commandArgs(commandLine));
     }
 
     public enum CommandList {

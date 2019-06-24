@@ -1,9 +1,8 @@
 package com.example.xmlformatter.config;
 
-import com.example.xmlformatter.factory.AbstractCommandFactory;
 import com.example.xmlformatter.factory.PathFactory;
 import com.example.xmlformatter.factory.ScannerFactory;
-import com.example.xmlformatter.service.ScannerService;
+import com.example.xmlformatter.model.PathHolder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +22,11 @@ public class AppConfig {
     @Bean
     public Path getPath() {
         return PathFactory.getInstance();
+    }
+
+    @Bean
+    public PathHolder getPathHolder(Path path) {
+        return new PathHolder(path);
     }
 
 }

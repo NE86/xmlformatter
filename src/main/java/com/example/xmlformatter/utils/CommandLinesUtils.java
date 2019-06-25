@@ -12,7 +12,7 @@ public class CommandLinesUtils {
 
     public static String commandArgs(String line) {
         if ((line = line.trim()).contains(" ")) {
-            return line.substring(line.indexOf(" "), line.length() - line.indexOf(" ") + 2).trim();
+            return line.substring(line.indexOf(" ")).trim();
         } else {
             return "";
         }

@@ -21,12 +21,11 @@ public class ScannerService {
     }
 
     public void run() {
-        System.out.print("Enter something : ");
-        String input = scanner.nextLine();
-
-        AbstractCommandFactory.getCommand(input).execute(pathHolder);
-
-        System.out.println("-----------\n");
-        run();
+        while (true) {
+            System.out.print("Enter something : ");
+            String input = scanner.nextLine();
+            AbstractCommandFactory.getCommand(input).execute(pathHolder);
+            System.out.println("-----------\n");
+        }
     }
 }
